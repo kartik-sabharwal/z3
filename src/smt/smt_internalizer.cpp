@@ -1419,6 +1419,10 @@ namespace smt {
         }
         TRACE("mk_clause", display_literals_verbose(tout << "after simplification: " << literal_vector(num_lits, lits) << "\n", num_lits, lits) << "\n";);
 
+        // @Kartik.  We want to print each added clause as a list (add-clause L_1 ... L_n) where each L_i is an integer that denotes a literal.
+        STRACE("mk_clause_specific", tout << "(" << "add-clause" << " " << literal_vector(num_lits, lits) << ")" << std::endl;);
+        // * * *
+
         unsigned activity = 1;
         bool  lemma = is_lemma(k);
         m_stats.m_num_mk_lits += num_lits;
@@ -1511,7 +1515,7 @@ namespace smt {
                 else if (get_assignment(cls->get_literal(1)) == l_false)
                     assign(cls->get_literal(0), b_justification(cls));
             }
-            
+
             add_lit_occs(*cls);
             
             TRACE("add_watch_literal_bug", display_clause_detail(tout, cls););
