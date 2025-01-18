@@ -109,3 +109,5 @@ CMakeSettings.json
 dbg/**
 *.wsp
 CppProperties.json
+# Scribble generated files
+personal-README.md

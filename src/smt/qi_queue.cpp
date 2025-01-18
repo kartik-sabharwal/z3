@@ -143,6 +143,23 @@ namespace smt {
                   tout << "#" << f->get_arg(i)->get_expr_id() << " d:" << f->get_arg(i)->get_expr()->get_depth() << " ";
               }
               tout << "\n";);
+        // @Kartik 15:05 Jan 16 2025.
+        // I want to see if I can print the QID of the quantified formula being
+        // instantiated and the actual arguments, not just the arguments'
+        // expression IDs.
+        STRACE("qi_queue_specific",
+               tout << "(" << q->get_qid() << " ";
+               {
+                 bool firstp = true;
+                 for ( unsigned i = 0; i < f->get_num_args(); i++ )
+                 {
+                   if ( firstp ) { firstp = false; } else { tout << " "; }
+                   tout << mk_pp(f->get_arg(i)->get_expr(), m); // print the expression
+                   // tout << f->get_arg(i)->get_expr(); // print the expression's address
+                 }
+               }
+               tout << ")" << std::endl;);
+        // * * *
         TRACE("new_entries_bug", tout << "[qi:insert]\n";);
         m_new_entries.push_back(entry(f, cost, generation));
     }
