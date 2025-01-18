@@ -24,6 +24,12 @@ Revision History:
 #include "smt/smt_context.h"
 #include "smt/qi_queue.h"
 #include <iostream>
+// @Kartik 11:36 Jan 23.
+// I want to grab the time in ms to print with each instance using
+// `gettimeofday()`.
+#include <sys/time.h>
+// * * *
+
 
 namespace smt {
 
@@ -325,6 +331,21 @@ namespace smt {
         m_stats.m_num_instances++;
         unsigned gen = get_new_gen(q, generation, ent.m_cost);
         display_instance_profile(f, q, num_bindings, bindings, proof_id, gen);
+        // @Kartik 00:01 Mar 27 2025.
+        struct timeval tv;
+        gettimeofday(&tv, NULL);
+        int64_t tstamp = (int64_t)tv.tv_sec * 1000 + tv.tv_usec / 1000;
+
+        STRACE("qi_queue_specific",
+               tout << "(" << tstamp << " " << mk_ismt2_pp(q, m);
+               {
+                 for ( unsigned i = 0; i < f->get_num_args(); i++ )
+                 {
+                   tout << " " << mk_pp(f->get_arg(i)->get_expr(), m);
+                 }
+               }
+               tout << ")" << std::endl;);
+        // * * *
         m_context.internalize_instance(lemma, pr1, gen);
         if (f->get_def()) {
             m_context.internalize(f->get_def(), true);
@@ -517,4 +538,3 @@ namespace smt {
     }
 
 };
-

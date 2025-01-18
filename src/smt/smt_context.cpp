@@ -2029,7 +2029,38 @@ namespace smt {
         SASSERT(m_flushing || !cls->in_reinit_stack());
         if (log) 
             m_clause_proof.del(*cls);
-        CTRACE("context", !m_flushing, display_clause_smt2(tout << "deleting ", *cls) << "\n";);
+        CTRACE("context", !m_flushing,
+               display_clause_smt2(tout << "deleting ", *cls) << "\n";);
+
+        // @Kartik.  We want to print each deleted clause as a list (delete-clause L_1 ... L_n) where each L_i is an integer that denotes a literal.
+        // We also want to print the kind of clause that was deleted on the next line.
+        STRACE("context_specific", tout << "(delete-clause " << literal_vector(cls->m_num_literals, cls->begin()) << ")";);
+
+        switch (cls->m_kind)
+        {
+          case CLS_AUX:
+          {
+            STRACE("context_specific", tout << " CLS_AUX" << std::endl;);
+            break;
+          }
+          case CLS_TH_AXIOM:
+          {
+            STRACE("context_specific", tout << " CLS_TH_AXIOM" << std::endl;);
+            break;
+          }
+          case CLS_LEARNED:
+          {
+            STRACE("context_specific", tout << " CLS_LEARNED" << std::endl;);
+            break;
+          }
+          case CLS_TH_LEMMA:
+          {
+            STRACE("context_specific", tout << " CLS_TH_LEMMA" << std::endl;);
+            break;
+          }
+        }
+        // * * *
+
         if (!cls->deleted())
             remove_cls_occs(cls);
         cls->deallocate(m);
@@ -2285,6 +2316,10 @@ namespace smt {
                 SASSERT(cls->in_reinit_stack());
                 bool keep = false;
                 if (cls->reinternalize_atoms()) {
+                    // @Kartik.
+                    literal_vector old_lits(cls->m_num_literals, cls->m_lits);
+                    // * * *
+
                     SASSERT(cls->get_num_atoms() == cls->get_num_literals());
                     for (unsigned j = 0; j < 2; j++) {
                         literal l           = cls->get_literal(j);
@@ -2345,6 +2380,11 @@ namespace smt {
                     TRACE("reinit_clauses", tout << "reinit clause:\n"; display_clause_detail(tout, cls); tout << "\n";
                           tout << "activity: " << cls->get_activity() << ", num_bool_vars: " << num_bool_vars << ", scope_lvl: "
                           << m_scope_lvl << "\n";);
+
+                    // @Kartik.
+                    STRACE("context_specific", tout << "(reinit-clause (" << old_lits << ") (" << literal_vector(cls->m_num_literals, cls->begin()) << "))" << std::endl;);
+                    // * * *
+
                     keep = true;
                 }
                 else {
@@ -2532,6 +2572,10 @@ namespace smt {
             return true;
         }
 
+        // @Kartik.
+        STRACE("simplify_clause_specific", tout << "(" << "simplify-clause" << " (" << literal_vector(cls.m_num_literals, cls.m_lits) << ")";);
+        // * * *
+
         literal_buffer simp_lits;
 
         unsigned i = 2;
@@ -2560,8 +2604,17 @@ namespace smt {
         if (j < s) {
             m_clause_proof.shrink(cls, j);
             cls.set_num_literals(j);
+            // @Kartik.
+            STRACE("simplify_clause_specific", tout << " (" << literal_vector(cls.m_num_literals, cls.m_lits) << "))" << std::endl;);
+            // * * *
             SASSERT(j >= 2);
         }
+        // @Kartik.
+        else
+        {
+          STRACE("simplify_clause_specific", tout << ")" << std::endl;);
+        }
+        // * * *
 
         if (is_taut) {
             return true;
@@ -4337,6 +4390,11 @@ namespace smt {
             }
 #endif
             mk_clause(num_lits, lits, js, CLS_LEARNED);
+
+            // @Kartik.  Print learned clauses separately to ensure we're not missing any.
+            STRACE("context_specific", tout << "(learn-clause " << literal_vector(num_lits, lits) << ")" << std::endl;);
+            // * * *
+
             if (delay_forced_restart) {
                 SASSERT(num_lits == 1);
                 expr * unit     = bool_var2expr(lits[0].var());
@@ -4354,6 +4412,7 @@ namespace smt {
                   for (unsigned i = 0; i < num_lits; i++) {
                       display_literal(tout, v[i]);
                       tout << "\n";
+                      tout << "literally " << v << std::endl;
                       smt::display(tout, v[i], m, m_bool_var2expr.data());
                       tout << "\n\n";
                   }

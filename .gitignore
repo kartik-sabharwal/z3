@@ -111,3 +111,5 @@ dbg/**
 CppProperties.json
 genaisrc/genblogpost.genai.mts
 *.mts
+# Scribble generated files
+personal-README.md
