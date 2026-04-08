@@ -251,6 +251,15 @@ namespace smt {
         app * f       = m.mk_false();
         m_false_enode = mk_enode(f, true, true, false);
         // m_false_enode->mark_as_interpreted();
+
+        // Begin initializing instance printer.
+        std::string& instances_file = m_fparams.m_instances2file;
+        if (instances_file != "")
+        {
+          m_instances_file_huh = true;
+          m_instances_file = std::ofstream(instances_file);
+        }
+        // End initializing instance printer.
     }
 
     void context::set_progress_callback(progress_callback *cb) {

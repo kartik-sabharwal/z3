@@ -92,6 +92,8 @@ namespace smt {
         void set_reason_unknown(char const* msg) { m_unknown = msg; }
         void set_progress_callback(progress_callback *callback);
 
+        std::ofstream               m_instances_file;
+        bool                        m_instances_file_huh = false;
 
     protected:
         ast_manager &               m;

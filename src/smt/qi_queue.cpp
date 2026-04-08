@@ -20,6 +20,7 @@ Revision History:
 #include "util/stats.h"
 #include "ast/ast_pp.h"
 #include "ast/ast_ll_pp.h"
+#include "ast/ast_smt_pp.h"
 #include "ast/rewriter/var_subst.h"
 #include "smt/smt_context.h"
 #include "smt/qi_queue.h"
@@ -330,6 +331,17 @@ namespace smt {
         m_stats.m_num_instances++;
         unsigned gen = get_new_gen(q, generation, ent.m_cost);
         display_instance_profile(f, q, num_bindings, bindings, proof_id, gen);
+
+        // Begin instance printing code.
+        if (m_context.m_instances_file_huh)
+        {
+          std::ostream& out = m_context.m_instances_file;
+          ast_smt_pp pp(m);
+          pp.display_expr_smt2(out, s_instance);
+          out << std::endl;
+        }
+        // End instance printing code.
+
         m_context.internalize_instance(lemma, pr1, gen);
         if (f->get_def()) {
             m_context.internalize(f->get_def(), true);
